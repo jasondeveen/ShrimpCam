@@ -1,11 +1,12 @@
 #include <ESP8266WiFi.h> // Include the Wi-Fi library
 
-const int pwmPin = 12;
+#define AIN1 D6
+#define AIN2 D7
 
 const char *ssid = "Wifiat 1";       // The SSID (name) of the Wi-Fi network you want to connect to
 const char *password = "Fiat126bis"; // The password of the Wi-Fi network
 
-IPAddress server(192, 168, 0, 230);
+IPAddress server(192, 168, 0, 11);
 int port = 5001;
 WiFiClient client;
 int heartbeatTimer = 30;
@@ -18,8 +19,10 @@ void setup()
   delay(10);
   Serial.println('\n');
 
-  pinMode(pwmPin, OUTPUT);
-  analogWrite(pwmPin, 255);
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+  digitalWrite(AIN1, 0);
+  digitalWrite(AIN2, 0);
 
   connect_to_wifi();
   connect_to_server();
@@ -46,7 +49,7 @@ void loop()
       client.println("PING");
       heartbeatTimer = 30;
     } 
-  }
+ }
 
   while (client.available())
   {
@@ -54,21 +57,32 @@ void loop()
 
     Serial.println(cmd);
 
-    if (cmd == "MOTORON")
-      analogWrite(pwmPin, 0);
+    if (cmd == "MOTORON"){
+      analogWrite(AIN1, 1023);
+      digitalWrite(AIN2, 0);
+    }
 
-    else if (cmd == "MOTORHALF")
-      analogWrite(pwmPin, 127);
+    else if (cmd == "MOTORHALF"){
+      analogWrite(AIN1, 512);
+      digitalWrite(AIN2, 0);
+    }
 
-    else if (cmd == "MOTOROFF")
-      analogWrite(pwmPin, 255);
+    else if (cmd == "MOTOROFF"){
+      analogWrite(AIN1, 0);
+      digitalWrite(AIN2, 0);
+    }
+
+    else if (cmd == "MOTORREV"){
+      digitalWrite(AIN1, 0);
+      analogWrite(AIN2, 1023);
+    }
 
 
     if (client.connected()){
-      client.println("ACK " + cmd);
+        client.println("ACK " + cmd);
         heartbeatTimer = 30;
       }  
-  }
+    }
 
   heartbeatTimer--;
   delay(1000);
