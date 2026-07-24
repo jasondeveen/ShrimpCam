@@ -1,9 +1,6 @@
 #include <ESP8266WiFi.h> // Include the Wi-Fi library
 
-// Set pin 2 for NodeMCU or specify your GPIO pin
-const int ledPin = 2;
 const int pwmPin = 12;
-bool ledOn = false;
 
 const char *ssid = "Wifiat 1";       // The SSID (name) of the Wi-Fi network you want to connect to
 const char *password = "Fiat126bis"; // The password of the Wi-Fi network
@@ -21,18 +18,13 @@ void setup()
   delay(10);
   Serial.println('\n');
 
-  // Initialize the LED pin as an output
   pinMode(pwmPin, OUTPUT);
-  delay(100);
-  analogWrite(pwmPin, 0);
+  analogWrite(pwmPin, 255);
 
   connect_to_wifi();
-  while (!client.connect(server, port))
-  {
-    Serial.println("Connection to server failed, retrying...");
-    delay(1000);
-  }
+  connect_to_server();
 }
+
 
 void loop()
 {
@@ -45,11 +37,7 @@ void loop()
 
     client.stop();
 
-    while (!client.connect(server, port))
-    {
-      Serial.println("Connection to server failed, retrying...");
-      delay(1000);
-    }
+    connect_to_server();
   }
 
   // heartbeat ~30 sec
@@ -65,10 +53,13 @@ void loop()
     Serial.println(cmd);
 
     if (cmd == "MOTORON")
-      analogWrite(pwmPin, 255);
+      analogWrite(pwmPin, 0);
+
+    else if (cmd == "MOTORHALF")
+      analogWrite(pwmPin, 127);
 
     else if (cmd == "MOTOROFF")
-      analogWrite(pwmPin, 0);
+      analogWrite(pwmPin, 255);
 
 
     if (client.connected())
@@ -100,4 +91,13 @@ void connect_to_wifi()
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP()); // Send the IP address of the ESP8266 to the computer
   Serial.println('\n');
+}
+
+void connect_to_server()
+{
+  while (!client.connect(server, port))
+  {
+    Serial.println("Connection to server failed, retrying...");
+    delay(1000);
+  }
 }
