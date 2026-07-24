@@ -42,8 +42,10 @@ void loop()
 
   // heartbeat ~30 sec
   if(heartbeatTimer <= 0){
-    if (client.connected())
+    if (client.connected()){      
       client.println("PING");
+      heartbeatTimer = 30;
+    } 
   }
 
   while (client.available())
@@ -62,8 +64,10 @@ void loop()
       analogWrite(pwmPin, 255);
 
 
-    if (client.connected())
+    if (client.connected()){
       client.println("ACK " + cmd);
+        heartbeatTimer = 30;
+      }  
   }
 
   heartbeatTimer--;
